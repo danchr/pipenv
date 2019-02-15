@@ -674,7 +674,7 @@ def _cleanup_procs(procs, concurrent, failed_deps_queue, retry=True):
 def batch_install(deps_list, procs, failed_deps_queue,
                   requirements_dir, no_deps=False, ignore_hashes=False,
                   allow_global=False, blocking=False, pypi_mirror=None,
-                  nprocs=PIPENV_MAX_SUBPROCESS, retry=True):
+                  nprocs=PIPENV_MAX_SUBPROCESS, retry=True, bare=False):
 
     failed = (not retry)
     if not failed:
@@ -684,6 +684,7 @@ def batch_install(deps_list, procs, failed_deps_queue,
 
     deps_list_bar = progress.bar(
         deps_list, width=32,
+        hide=bare or None,
         label=label
     )
     indexes = []
@@ -1020,7 +1021,7 @@ def do_lock(
         lockfile_section = "develop" if is_dev else "default"
         packages = getattr(project, pipfile_section)
 
-        if write:
+        if write and not bare:
             # Alert the user of progress.
             click.echo(
                 u"{0} {1} {2}".format(
@@ -1138,6 +1139,7 @@ def do_init(
     keep_outdated=False,
     requirements_dir=None,
     pypi_mirror=None,
+    bare=False,
 ):
     """Executes the init functionality."""
     from .environments import PIPENV_VIRTUALENV
@@ -1199,6 +1201,7 @@ def do_init(
                     keep_outdated=keep_outdated,
                     write=True,
                     pypi_mirror=pypi_mirror,
+                    bare=bare,
                 )
     # Write out the lockfile if it doesn't exist.
     if not project.lockfile_exists and not skip_lock:
@@ -1231,10 +1234,11 @@ def do_init(
         concurrent=concurrent,
         requirements_dir=requirements_dir,
         pypi_mirror=pypi_mirror,
+        bare=bare,
     )
 
     # Hint the user what to do to activate the virtualenv.
-    if not allow_global and not deploy and "PIPENV_ACTIVE" not in os.environ:
+    if not bare and not allow_global and not deploy and "PIPENV_ACTIVE" not in os.environ:
         click.echo(
             "To activate this project's virtualenv, run {0}.\n"
             "Alternatively, run a command "
@@ -2602,6 +2606,7 @@ def do_sync(
         pypi_mirror=pypi_mirror,
         deploy=deploy,
         system=system,
+        bare=bare,
     )
     if not bare:
         click.echo(crayons.green("All dependencies are now up-to-date!"))
