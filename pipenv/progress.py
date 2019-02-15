@@ -93,6 +93,7 @@ class Bar(object):
         self.etadelta = time.time()
         self.etadisp = self.format_time(self.eta)
         self.last_progress = 0
+        self.has_shown = False
         if self.expected_size:
             self.show(0)
 
@@ -103,6 +104,7 @@ class Bar(object):
             raise Exception("expected_size not initialized")
 
         self.last_progress = progress
+        self.has_shown = True
         if (time.time() - self.etadelta) > ETA_INTERVAL:
             self.etadelta = time.time()
             self.ittimes = self.ittimes[-ETA_SMA_WINDOW:] + [
@@ -136,7 +138,7 @@ class Bar(object):
     def done(self):
         self.elapsed = time.time() - self.start
         elapsed_disp = self.format_time(self.elapsed)
-        if not self.hide:
+        if self.has_shown and not self.hide:
             # Print completed bar with elapsed time
             STREAM.write(
                 BAR_TEMPLATE
