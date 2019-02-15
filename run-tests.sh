@@ -16,7 +16,7 @@ if [[ ! -z "$TEST_SUITE" ]]; then
 	echo "Using TEST_SUITE=$TEST_SUITE"
 fi
 
-HOME=$(readlink -f ~/)
+HOME=$(cd ~; pwd -P)
 if [[ -z "$HOME" ]]; then
     if [[ "$USER" == "root" ]]; then
         HOME="/root"
